@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a0a00" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CardVault" />
+  <meta name="description" content="Scan and organize business cards — paper or digital." />
+  <title>CardVault — by CMB Enterprise Group LLC</title>
+  <link rel="icon" type="image/x-icon" href="icons/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="splash-inner">
+      <div class="splash-logo">
+        <div class="logo-card card-back"></div>
+        <div class="logo-card card-front">
+          <span>CV</span>
+        </div>
+      </div>
+      <h1>CardVault</h1>
+      <p>Your contacts. Organized.</p>
+      <div class="splash-bar"></div>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="app" class="hidden">
+
+    <!-- HEADER -->
+    <header>
+      <div class="header-left">
+        <div class="logo-mark">CV</div>
+        <div>
+          <span class="app-title">CardVault</span>
+          <span class="contact-count" id="headerCount">0 contacts</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="exportBtn" title="Export CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </header>
+
+    <!-- SEARCH BAR -->
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search name, company, email…" autocomplete="off" />
+      <button class="clear-btn hidden" id="clearSearch">✕</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" data-tab="contacts">Contacts</button>
+      <button class="tab" data-tab="scan">Scan Card</button>
+      <button class="tab" data-tab="manual">Add Manual</button>
+    </div>
+
+    <!-- CONTACTS VIEW -->
+    <div class="view active" id="view-contacts">
+      <div id="contactList" class="contact-list"></div>
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">📇</div>
+        <p>No contacts yet.</p>
+        <p class="sub">Scan a card or add one manually.</p>
+      </div>
+    </div>
+
+    <!-- SCAN VIEW -->
+    <div class="view hidden" id="view-scan">
+      <div class="scan-area">
+        <div class="scan-instructions">
+          <p>Point your camera at a <strong>paper or digital</strong> business card. Hold steady for best OCR results.</p>
+        </div>
+
+        <div class="camera-container" id="cameraContainer">
+          <video id="cameraFeed" autoplay playsinline muted></video>
+          <div class="scan-overlay">
+            <div class="scan-frame">
+              <span class="corner tl"></span>
+              <span class="corner tr"></span>
+              <span class="corner bl"></span>
+              <span class="corner br"></span>
+            </div>
+            <div class="scan-line"></div>
+          </div>
+          <canvas id="captureCanvas" class="hidden"></canvas>
+        </div>
+
+        <div class="scan-actions">
+          <button class="btn-secondary" id="uploadBtn">📁 Upload Image</button>
+          <button class="btn-primary" id="captureBtn">📷 Capture</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" class="hidden" />
+
+        <!-- Preview & extracted data -->
+        <div id="previewSection" class="hidden">
+          <div class="section-label">Card Preview</div>
+          <img id="previewImg" alt="Card preview" />
+          <div class="processing-indicator" id="processingIndicator">
+            <div class="spinner"></div>
+            <span>Extracting contact info…</span>
+          </div>
+          <div id="extractedForm" class="hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL ENTRY VIEW -->
+    <div class="view hidden" id="view-manual">
+      <form id="manualForm" class="entry-form">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="m_name" placeholder="Jane Smith" required />
+        </div>
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" id="m_title" placeholder="Marketing Director" />
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="m_company" placeholder="Acme Corp" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="m_email" placeholder="jane@acme.com" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="m_phone" placeholder="(816) 555-0100" />
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="url" id="m_website" placeholder="https://acme.com" />
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" id="m_address" placeholder="123 Main St, Kansas City, MO" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="m_notes" placeholder="Where you met, follow-up needed…" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Card Type</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="m_type" value="paper" checked /> Paper</label>
+            <label class="radio-opt"><input type="radio" name="m_type" value="digital" /> Digital</label>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary full-width">Save Contact</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- CONTACT DETAIL MODAL -->
+  <div id="detailModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" id="closeModal">✕</button>
+      <div id="modalContent"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="editContactBtn">Edit</button>
+        <button class="btn-danger" id="deleteContactBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Tesseract OCR via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
